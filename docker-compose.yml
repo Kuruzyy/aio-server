@@ -1,0 +1,201 @@
+---
+services:
+  ############################
+  #                          #
+  #      Reverse Proxy       #
+  #                          #
+  ############################
+  nginx-db:
+    container_name: nginx-db
+    image: "jc21/mariadb-aria:latest"
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/nginx/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD: "npm"
+      - MYSQL_DATABASE: "npm"
+      - MYSQL_USER: "npm"
+      - MYSQL_PASSWORD: "npm"
+      - MARIADB_AUTO_UPGRADE: "1"
+    networks:
+      - proxy
+
+  nginx:
+    container_name: nginx
+    image: "jc21/nginx-proxy-manager:latest"
+    restart: unless-stopped
+    depends_on:
+      - nginx-db
+    volumes:
+      - ${DIR}/config/nginx/data:/data
+      - ${DIR}/config/nginx/letsencrypt:/etc/letsencrypt
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    environment:
+      - DB_MYSQL_HOST: "nginx-db"
+      - DB_MYSQL_PORT: 3306
+      - DB_MYSQL_USER: "npm"
+      - DB_MYSQL_PASSWORD: "npm"
+      - DB_MYSQL_NAME: "npm"
+    networks:
+      - proxy
+
+  ############################
+  #                          #
+  #        Dashboards        #
+  #                          #
+  ############################
+  glance:
+    container_name: glance
+    image: glanceapp/glance
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/glance/glance.yml:/app/glance.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    #ports:
+    # - 8080:8080
+    networks:
+      - proxy
+
+  flame:
+    container_name: flame
+    image: pawelmalak/flame
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/flame:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    #ports:
+    # - 5005:5005
+    environment:
+      - PASSWORD=${FLAMEPWD}
+    networks:
+      - proxy
+
+  ############################
+  #                          #
+  #     Password Manager     #
+  #                          #
+  ############################
+  vaultwarden:
+    container_name: vaultwarden
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/vaultwarden/:/data/
+    #ports:
+    # - 80:80
+    environment:
+      - DOMAIN: "https://password.home.local"
+    networks:
+      - proxy
+
+  ############################
+  #                          #
+  #   Document Management    #
+  #                          #
+  ############################
+  paperless-redis:
+    container_name: paperless-redis
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/paperless-ngx/redis:/data
+    networks:
+      - proxy
+
+  paperless:
+    container_name: paperless-ngx
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless-redis
+    volumes:
+      - ${DIR}/config/paperless-ngx/data:/usr/src/paperless
+    #ports:
+    # - 8000:8000
+    environment:
+      - PAPERLESS_REDIS: redis://paperless-redis:6379
+    networks:
+      - proxy
+
+  ############################
+  #                          #
+  #   Knowledge Management   #
+  #                          #
+  ############################
+  siyuan:
+    container_name: siyuan
+    image: b3log/siyuan
+    restart: unless-stopped
+    command:
+      - "--workspace=/siyuan/workspace/"
+      - "--accessAuthCode=${SIYUANPWD}"
+    volumes:
+      - ${DIR}/config/siyuan:/siyuan/workspace
+    #ports:
+    # - 6806:6806
+    environment:
+      - TZ: ${TZ}
+      - PUID: ${PUID}
+      - PGID: ${PGID}
+    networks:
+      - proxy
+
+  ############################
+  #                          #
+  #      Cloud Solution      #
+  #                          #
+  ############################
+  nextcloud-db:
+    container_name: nextcloud-db
+    image: mariadb:latest
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/nextcloud/db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=nextcloud
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=nextcloud
+    networks:
+      - proxy
+
+  nextcloud-redis:
+    container_name: nextcloud-redis
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - ${DIR}/config/nextcloud/redis:/data
+    networks:
+      - proxy
+
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud:latest
+    restart: unless-stopped
+    depends_on:
+      - nextcloud-db
+      - nextcloud-redis
+    volumes:
+      - ${DIR}/config/nextcloud/app:/var/www/html
+    #ports:
+    # - 8080:80
+    environment:
+      # DATABASE (MARIADB)
+      - NEXTCLOUD_DB_TYPE=mysql
+      - NEXTCLOUD_DB_HOST=nextcloud-db
+      - NEXTCLOUD_DB_NAME=nextcloud
+      - NEXTCLOUD_DB_USER=nextcloud
+      - NEXTCLOUD_DB_PASSWORD=nextcloud
+      # REDIS
+      - REDIS_HOST=nextcloud-redis
+      - REDIS_HOST_PORT=6379
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
