@@ -5,40 +5,21 @@ services:
   #      Reverse Proxy       #
   #                          #
   ############################
-  nginx-db:
-    container_name: nginx-db
-    image: "jc21/mariadb-aria:latest"
+  zoraxy:
+	  container_name: zoraxy
+    image: zoraxydocker/zoraxy:latest
     restart: unless-stopped
-    volumes:
-      - ${DIR}/config/nginx/mysql:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD: "npm"
-      - MYSQL_DATABASE: "npm"
-      - MYSQL_USER: "npm"
-      - MYSQL_PASSWORD: "npm"
-      - MARIADB_AUTO_UPGRADE: "1"
-    networks:
-      - proxy
-
-  nginx:
-    container_name: nginx
-    image: "jc21/nginx-proxy-manager:latest"
-    restart: unless-stopped
-    depends_on:
-      - nginx-db
-    volumes:
-      - ${DIR}/config/nginx/data:/data
-      - ${DIR}/config/nginx/letsencrypt:/etc/letsencrypt
     ports:
-      - "80:80"
-      - "443:443"
-      - "81:81"
+      - 80:80
+      - 443:443
+      - 8000:8000
+    volumes:
+      - ${DIR}/config/zoraxy:/opt/zoraxy/config/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime
     environment:
-      - DB_MYSQL_HOST: "nginx-db"
-      - DB_MYSQL_PORT: 3306
-      - DB_MYSQL_USER: "npm"
-      - DB_MYSQL_PASSWORD: "npm"
-      - DB_MYSQL_NAME: "npm"
+      - FASTGEOIP: "true"
+      - ZEROTIER: "true"
     networks:
       - proxy
 
@@ -57,20 +38,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     #ports:
     # - 8080:8080
-    networks:
-      - proxy
-
-  flame:
-    container_name: flame
-    image: pawelmalak/flame
-    restart: unless-stopped
-    volumes:
-      - ${DIR}/config/flame:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    #ports:
-    # - 5005:5005
-    environment:
-      - PASSWORD=${FLAMEPWD}
     networks:
       - proxy
 
