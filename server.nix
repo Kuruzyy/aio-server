@@ -10,9 +10,9 @@ let
     DIR = "/mnt/raid/config";
     domainName = "home.local";
 	
-		# RAID1 disk UUIDs
-		disk1 = /dev/disk/by-id/ata-disk1
-		disk2 = /dev/disk/by-id/ata-disk2
+    # RAID1 disk UUIDs
+    disk1 = /dev/disk/by-id/ata-disk1
+    disk2 = /dev/disk/by-id/ata-disk2
   };
 in
 {
