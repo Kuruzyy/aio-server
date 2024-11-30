@@ -2,7 +2,7 @@
 
 let
   vars = {
-		# Containers environment configurations
+    # Containers environment configurations
     siyuanPwd = "siyuan";
     TZ = "Asia/Kuala_Lumpur";
     PGID = "1000";
