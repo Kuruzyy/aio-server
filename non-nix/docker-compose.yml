@@ -6,7 +6,7 @@ services:
   #                          #
   ############################
   zoraxy:
-	  container_name: zoraxy
+    container_name: zoraxy
     image: zoraxydocker/zoraxy:latest
     restart: unless-stopped
     ports:
