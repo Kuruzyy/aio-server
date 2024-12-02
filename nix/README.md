@@ -35,7 +35,7 @@
 
 ## Post-Install
 - Visit 'http://serverIP:8000/' to visit Zoraxy, the main reverse proxy.
-- Configure reverse proxy, because it is within the same network with other containers, foward '<containerName>:<containerPort>' will suffice.
+- Configure reverse proxy, because it is within the same network with other containers, foward 'containerName:containerPort' will suffice.
 - Repeat for all containers (Zoraxy, Glance, Vaultwarden, Paperless-NGX, Siyuan, NextCloud and Actual-Budget).
 
 ## Notes:
