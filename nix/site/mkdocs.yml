@@ -1,0 +1,7 @@
+site_name: My Docs
+theme:
+  name: terminal
+  palette: dark
+  features:
+    - navigation.top.search_button.hide
+    - navigation.top.hide
