@@ -34,7 +34,7 @@
 - Actual-Budget (Personal Finance)
 
 ## Post-Install
-- Visit 'http://<ip>:8000/' to visit Zoraxy, the main reverse proxy.
+- Visit 'http://serverIP:8000/' to visit Zoraxy, the main reverse proxy.
 - Configure reverse proxy, because it is within the same network with other containers, foward '<containerName>:<containerPort>' will suffice.
 - Repeat for all containers (Zoraxy, Glance, Vaultwarden, Paperless-NGX, Siyuan, NextCloud and Actual-Budget).
 
