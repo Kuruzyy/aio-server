@@ -129,11 +129,11 @@
           REDIS_HOST = "nextcloud-redis";
           REDIS_HOST_PORT = "6379";
         };
-		    networks = [ "stack" ];
-	    };
+	networks = [ "stack" ];
+      };
 	  
-	    # Personal Finance
-	    actual-budget = {
+	# Personal Finance
+	actual-budget = {
         image = "docker.io/actualbudget/actual-server:latest";
         hostname = "actual-budget";
         autoStart = true;
