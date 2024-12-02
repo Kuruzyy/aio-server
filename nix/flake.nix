@@ -12,7 +12,7 @@
         # Storage variables for RAID1 Pool
         disk1 = "/dev/disk/by-id/ata-disk1";
         disk2 = "/dev/disk/by-id/ata-disk2";
-		    mountDir = "/mnt/raid"
+        mountDir = "/mnt/raid"
 
         # Containers environment configurations
         siyuanPwd = "siyuan";
