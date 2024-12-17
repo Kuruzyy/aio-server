@@ -10,7 +10,7 @@
 
     virtualisation = {
         podman = {
-            enable = true
+            enable = true;
             socketActivate = true;
             dockerCompat = true;
             defaultNetwork.settings.dns_enabled = true;
