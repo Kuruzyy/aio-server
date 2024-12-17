@@ -12,15 +12,24 @@
         # Storage variables for RAID1 Pool
         disk1 = "/dev/disk/by-id/ata-disk1";
         disk2 = "/dev/disk/by-id/ata-disk2";
-        mountDir = "/mnt/raid"
+		    mountDir = "/mnt/raid"
 
         # Containers environment configurations
-        siyuanPwd = "siyuan";
+        nextcloudUsr = "admin";
+        nextCloudPwd = "admin@nextcloud";
+        paperlessUsr = "admin";
+        paperlessPwd = "admin@paperless";
+        paperlessMail = "example@admin.org";
+
+        # Note:
+        # Zoraxy & Actual Budget account creation through
+        # site only, Glance Dashboard need not password.
+
+        # General settings
         TZ = "Asia/Kuala_Lumpur";
         PGID = "1000";
         PUID = "1000";
         DIR = "/mnt/raid/config";
-        domainName = "home.local";
       };
     };
 

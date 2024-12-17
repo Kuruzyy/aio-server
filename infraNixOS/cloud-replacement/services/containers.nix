@@ -8,14 +8,11 @@
   ];
 
   virtualisation = {
-    podman = {
-      enable = true;
-      socketActivate = true;
-      defaultNetwork.settings.dns_enabled = true;
-    };
-
+    docker.enable = true;
+    
+    oci-containers.backend = "docker";
     oci-containers.containers = {
-      # Reverse Proxy
+      # Reverse Proxy (8000)
       zoraxy = {
         image = "zoraxydocker/zoraxy:latest";
         hostname = "zoraxy";
@@ -35,7 +32,7 @@
         ];
       };
 
-      # Dashboard
+      # Dashboard (8080)
       glance = {
         image = "glanceapp/glance";
         hostname = "glance";
@@ -51,22 +48,7 @@
         ];
       };
 
-      # Password Manager
-      vaultwarden = {
-        image = "vaultwarden/server:latest";
-        hostname = "vaultwarden";
-        autoStart = true;
-        volumes = [ "${vars.DIR}/vaultwarden:/data" ];
-        environment = {
-          DOMAIN = "https://passwords.${vars.domainName}";
-        };
-        extraOptions = [
-          "--network=stack"
-          "--pull=newer"
-        ];
-      };
-
-      # Document Management
+      # Document Management (8000)
       paperless-redis = {
         image = "redis:alpine";
         hostname = "paperless-redis";
@@ -85,6 +67,9 @@
         volumes = [ "${vars.DIR}/paperless-ngx/data:/usr/src/paperless" ];
         environment = {
           PAPERLESS_REDIS = "redis://paperless-redis:6379";
+          PAPERLESS_ADMIN_USER = vars.paperlessUsr;
+          PAPERLESS_ADMIN_PASSWORD = vars.paperlessPwd;
+          PAPERLESS_ADMIN_MAIL = vars.paperlessMail;
         };
         extraOptions = [
           "--network=stack"
@@ -92,28 +77,7 @@
         ];
       };
 
-      # Knowledge Management
-      siyuan = {
-        image = "b3log/siyuan";
-        hostname = "siyuan";
-        autoStart = true;
-        command = [
-          "--workspace=/siyuan/workspace/"
-          "--accessAuthCode=${vars.siyuanPwd}"
-        ];
-        volumes = [ "${vars.DIR}/siyuan:/siyuan/workspace" ];
-        environment = {
-          TZ = vars.TZ;
-          PUID = vars.PUID;
-          PGID = vars.PGID;
-        };
-        extraOptions = [
-          "--network=stack"
-          "--pull=newer"
-        ];
-      };
-
-      # Cloud Solution
+      # Cloud Solution (80)
       nextcloud-db = {
         image = "mariadb:latest";
         hostname = "nextcloud-db";
@@ -145,15 +109,19 @@
         hostname = "nextcloud";
         autoStart = true;
         dependsOn = [ "nextcloud-db" "nextcloud-redis" ];
-        volumes = [ "${vars.DIR}/nextcloud/app:/var/www/html" ];
+        volumes = [
+          "${vars.DIR}/nextcloud/app:/var/www/html"
+          "${vars.DIR}/paperless-ngx/data:/paperless"
+        ];
         environment = {
-          NEXTCLOUD_DB_TYPE = "mysql";
-          NEXTCLOUD_DB_HOST = "nextcloud-db";
-          NEXTCLOUD_DB_NAME = "nextcloud";
-          NEXTCLOUD_DB_USER = "nextcloud";
-          NEXTCLOUD_DB_PASSWORD = "nextcloud";
+          MYSQL_HOST = "nextcloud-db"
+          MYSQL_DATABASE = "nextcloud";
+          MYSQL_USER = "nextcloud";
+          MYSQL_PASSWORD = "nextcloud";
           REDIS_HOST = "nextcloud-redis";
           REDIS_HOST_PORT = "6379";
+          NEXTCLOUD_ADMIN_USER = vars.nextcloudUsr;
+          NEXTCLOUD_ADMIN_PASSWORD = vars.nextCloudPwd;
         };
         extraOptions = [
           "--network=stack"
@@ -161,7 +129,7 @@
         ];
       };
 
-      # Personal Finance
+      # Personal Finance (5006)
       actual-budget = {
         image = "docker.io/actualbudget/actual-server:latest";
         hostname = "actual-budget";
@@ -223,15 +191,9 @@
       ensure_directory "${vars.DIR}/glance" "${vars.PUID}" "${vars.PGID}"
       ensure_file "${vars.DIR}/glance/glance.yml" "${vars.PUID}" "${vars.PGID}" "644"
 
-      # Vaultwarden volume
-      ensure_directory "${vars.DIR}/vaultwarden" "${vars.PUID}" "${vars.PGID}"
-
       # Paperless volumes
       ensure_directory "${vars.DIR}/paperless-ngx/redis" "${vars.PUID}" "${vars.PGID}"
       ensure_directory "${vars.DIR}/paperless-ngx/data" "${vars.PUID}" "${vars.PGID}"
-
-      # Siyuan volume
-      ensure_directory "${vars.DIR}/siyuan" "${vars.PUID}" "${vars.PGID}"
 
       # Nextcloud volumes
       ensure_directory "${vars.DIR}/nextcloud/db" "${vars.PUID}" "${vars.PGID}"

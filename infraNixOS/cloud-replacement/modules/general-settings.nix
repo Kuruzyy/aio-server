@@ -12,8 +12,8 @@
 
   # Add system packages
   environment.systemPackages ++= with pkgs; [
-    mdadm
     mc
     btop
+    ctop
   ];
 }
